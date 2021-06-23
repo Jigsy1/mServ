@@ -1,0 +1,40 @@
+; And no, that isn't the password. I changed it purely for this log.
+
+[21:23:04] [W]: PASS :DrakesCoffeeCake
+[21:23:04] [W]: SERVER passionlip.localhost 1 1624479784 1624479784 J10 AP]]] :mSL IRC Server
+[21:23:04] [W]: AP EB
+[21:23:05] [R]: PASS :DrakesCoffeeCake
+[21:23:05] [R]: SERVER nero.localhost 1 1624479122 1624479785 J10 AND]] +6 :localhost
+[21:23:05] [R]: AN N Jigsy 1 1624479128 Jigsy nero.localhost +iowskRxgh Jigsy@Towa.Herschel.is.mai.waifu B]AAAB ANAAA :Google it: Jury Nullification
+[21:23:05] [R]: AN EB
+[21:23:05] [R]: AN EA
+[21:23:10] [R]: ANAAA C #localhost 1624479790
+[21:23:10] [R]: ANAAA M #localhost +nt 1624479790
+[21:23:21] [R]: ANAAA T #localhost 1624479790 1624479801 :And a topic!
+[21:23:21] [R]: ANAAA M #localhost +ms 1624479790
+[21:23:21] [R]: ANAAA M #localhost +lk 666 thisKey 1624479790
+[21:23:40] [R]: AN G :nero.localhost
+[21:23:40] [W]: AP Z :nero.localhost
+[21:23:41] [W]: AP P #localhost :Hello!
+[21:24:12] [R]: AN G :nero.localhost
+[21:24:12] [W]: AP Z :nero.localhost
+...
+[21:25:14] [W]: AP N Tamamo-no-Mae 1 1624479914 Tamamo holygra.il +di B]AAAB APAAA :Tamamo
+[21:25:25] [W]: APAAA J #localhost
+[21:26:07] [W]: APAAA M Tamamo-no-Mae -d
+[21:26:10] [R]: ANAAA P #localhost :Hello.
+[21:26:44] [R]: AN G :nero.localhost
+[21:26:44] [W]: AP Z :nero.localhost
+[21:26:44] [W]: AP M #localhost +vv ANAAA APAAA
+[21:27:14] [W]: AP K #localhost ANAAA ::D
+[21:27:14] [R]: ANAAA L #localhost
+[21:27:28] [R]: ANAAA J #localhost 1624479790
+[21:27:48] [R]: AN G :nero.localhost
+[21:27:48] [W]: AP Z :nero.localhost
+...
+[21:32:23] [R]: ANAAA P #localhost :I don't like the fact that Nero is overriding passionlip...
+[21:32:36] [R]: AN G :nero.localhost
+[21:32:36] [W]: AP Z :nero.localhost
+...
+[21:33:55] [W]: AP J #localhost
+[21:33:55] [R]: AN SQ nero.localhost 0 :Server passionlip.localhost tried to join a channel
