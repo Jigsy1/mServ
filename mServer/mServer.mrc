@@ -26,7 +26,7 @@
 ; "Settings"
 
 alias mServer.flags { return +s }
-; `-> Append flags - which in this case is basically just +s or +6 (or both) - with +.
+; `-> Append flags - which in this case is basically just +6 or +s (or both) - with +.
 alias mServer.info { return A jupe server for ircu's P10 protocol written in mSL. }
 alias mServer.numeric { return 0 }
 ; `-> Limited between 0 and 4095.
@@ -93,7 +93,7 @@ on *:sockread:mServer:{
 }
 ; ¦-> Technically I'd make this more compact - like checking if the command exists - but INFO, MOTD and TIME are merely demonstrations.
 ; ¦-> These are called via the token - F instead of INFO, for example - but if the server were to use the full name, it will work.
-; |-> E.g. /mServer.sraw INFO <the numeric of the server you're connected to>
+; ¦-> E.g. /mServer.sraw INFO <the numeric of the server you're connected to>
 ; `-> If you wish to test them, do: /COMMAND this.server - E.g. /INFO this.server
 on *:unload:{ sockclose mServer }
 
