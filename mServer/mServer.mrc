@@ -1,4 +1,4 @@
-; mServer - an example of linking to an ircu based IRCd in mIRC.
+; mServer - An example of linking to an ircu based IRCd in mIRC.
 ;
 ; This script will not work unless you have a C:line[1] on an ircu based IRCd. (E.g. http://ircd.bircd.org/)
 ;
@@ -6,15 +6,14 @@
 ; --------------------
 ; /mServer.sraw P #channel :Hello! - Makes the server itself say "Hello!" in #channel.
 ; /mServer.sraw M #channel +v ATAAx - Gives a +v to the user who has the numeric of ATAAx[2] on #channel.
-;
 ; //mServer.sraw N FBI 1 $ctime noreply fbi.gov +iko $inttobase64($longip(127.0.0.1),6) $+($inttobase64($mServer.numeric,2),$inttobase64(0,3)) :FBI
 ;
-; ...will create the user FBI!noreply@fbi.gov with usermodes +iko and an ip of 127.0.0.1 (B]AAAB) as user APAAA[3] on mServer's server.
-; NOTE: Creating APAAA on top of APAAA will[4] result in a SQUIT, so you might want to keep track of who has been created.
+; ...will create the user FBI!noreply@fbi.gov with usermodes +iko and an ip of 127.0.0.1 (B]AAAB) as user AAAAA[3] on mServer's server.
+; NOTE: Creating AAAAA on top of AAAAA will[4] result in a SQUIT, so you might want to keep track of who has been created if you plan on doing this.
 ;
-; /mServer.raw APAAA J #channel - Will make our newly created "FBI" user join #channel.
+; /mServer.raw AAAAA J #channel - Will make our newly created "FBI" user join #channel.
 ; /mServer.sraw J #channel - Will cause the server to SQUIT because servers cannot join channels. :P
-; /mServer.sraw I FBI #channel - Will also cause the server to SQUIT because servers cannot invite users.[5]
+; /mServer.sraw I FBI #channel - Will also cause the server to SQUIT because servers cannot invite users apparently.[5]
 ;
 ; Further reading:
 ; --------------------
@@ -23,20 +22,22 @@
 ; 3. [Raws]: https://modern.ircdocs.horse/index.html
 ; 4. [P10]:  http://web.mit.edu/klmitch/Sipb/devel/src/ircu2.10.11/doc/p10.html (incomplete)
 
-; "Settings"
+; "Settings":
 
-alias mServer.flags { return +s }
+alias mServer.flags { return + }
 ; `-> Append flags - which in this case is basically just +6 or +s (or both) - with +.
-alias mServer.info { return A jupe server for ircu's P10 protocol written in mSL. }
+alias mServer.info { return A jupe server for ircu P10 protocol in mSL. }
 alias mServer.numeric { return 0 }
 ; `-> Limited between 0 and 4095.
 alias -l mServer.password { return changeme }
 ; `-> Plaintext password.
 alias -l mServer.port { return 4400 }
+; `-> The port for server we plan on connecting to.
 alias -l mServer.server { return localhost }
+; `-> The address we plan on connecting to. E.g. /server localhost 4400
 alias -l mServer.serverName { return changeme.localhost }
 
-; Core
+; Core:
 
 on *:sockclose:mServer:{
   if ($window($mServer.window) != $null) { echo -ci2t "Info text" $v1 [C]: $sockname closed }
@@ -52,7 +53,8 @@ on *:sockopen:mServer:{
   mServer.raw SERVER $mServer.serverName 1 $ctime $ctime J10 $+(%this.numeric,]]]) $mServer.flags $+(:,$mServer.info)
   ; ¦-> SERVER <our server name> <hop count> <connection time> <link time> <protocol> <our server numeric><max users as numeric> [+flags] :<description>
   ; ¦-> We're joining the server, so we use J10 here, not P10. And ]]] means the maximum number of users allowed. (262,143)
-  ; `-> No flags are used here, but +s would mean Services. E.g. ... J10 AS]]] +s :Services
+  ; |-> Flags may or may not be being used here; +s would mean Services. E.g. ... J10 SV]]] +s :IRC Services
+  ; `-> NOTE: In the case of adding an new server post END_OF_BURST, you must specify flags! Even if it's just + or the server _will_ SQUIT.
   mServer.raw %this.numeric EB
   ; `-> END_OF_BURST
 }
@@ -68,24 +70,28 @@ on *:sockread:mServer:{
   }
   if ($istok(F INFO,$2,32) == $true) {
     ; <numeric> F <server numeric>
+
     mServer.sraw 371 $1 $+(:,$mServer.serverName)
     mServer.sraw 371 $1 $+(:,$mServer.info)
     mServer.sraw 374 $1 :End of /INFO list.
     return
   }
   if ($istok(G PING,$2,32) == $true) {
-    ; <server numeric> G [:]<arg>
+    ; <numeric> G [:]<arg>
+
     mServer.sraw Z $3-
-    ; `-> PING/PONG. (Saying PONG instead of Z should also work; but let's leave it alone.)
+    ; `-> Saying PONG instead of Z should also work; but let's leave it alone.
     return
   }
   if ($istok(MO MOTD,$2,32) == $true) {
     ; <numeric> MO <server numeric>
+
     mServer.sraw 422 $1 :MOTD File is missing
     return
   }
   if ($istok(TI TIME,$2,32) == $true) {
     ; <numeric> TI <server numeric>
+
     mServer.sraw 391 $1 $mServer.serverName $ctime 0 $+(:,$asctime($ctime,dddd mmmm dd yyyy -- HH:nn:ss))
     ; `-> 0 is offset. I don't know what to put here, so I'm leaving it as zero.
     return
@@ -97,7 +103,7 @@ on *:sockread:mServer:{
 ; `-> If you wish to test them, do: /COMMAND this.server - E.g. /INFO this.server
 on *:unload:{ sockclose mServer }
 
-; mServer Functions
+; mServer Function(s):
 
 alias mServer.raw {
   ; /mServer.raw <args>
@@ -135,10 +141,11 @@ alias mServer.stop {
 }
 alias -l mServer.window { return @mServer }
 
-; Server Functions
+; P10/Server Function(s):
 
 alias base64toint {
   ; $base64toint(<N>)
+
   var %o = 0, %x = 1
   while ($mid($1,%x,1) != $null) { 
     var %o = $calc(%o * 64)
@@ -151,6 +158,7 @@ alias -l i { return $calc($poscs(ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstu
 alias -l ii { return $mid(ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789[],$calc($int($1) + 1),1) }
 alias inttobase64 {
   ; $inttobase64(<N>,<pad to N chars>)
+
   var %c = $2, %o, %v = $1
   while (%c) {
     var %o = $+($ii($and(%v,63)),%o)
@@ -163,13 +171,13 @@ alias inttobase64 {
 
 ; Footnotes:
 ; ----------
-; [1]: C:127.0.0.1:changeme:passionlip.localhost::971 in an ircd.conf
-; [2]: Example only. Factors like the main servers numeric (AA, AB, etc.) will change this. (AAAAx, ABAAx, ACAAx, etc.)
-;      You'll be able to tell what the main servers numeric is from B information on linking. (Or hopefully doing /map.)
-; [3]: This is assuming you don't fiddle with the numeric number above.
-; [4]: APAAA on top of APAAA will result in a numeric collision (thus SQUIT). However, making "APAAA Q :Quit" first is fine.
-; [5]: I honestly fail to see how a server inviting a user to a channel is a problem. (They can change modes, kick users, talk...
-;      ...so why can't they invite?)
+; [1]: C:127.0.0.1:changeme:changeme.localhost::0 in an ircd.conf
+; [2]: Example only. Factors like the numeric of the main server (AA, AB, etc.) will change this. (AAAAx, ABAAx, ACAAx, etc.)
+;      You'll be able to tell what the numeric of the main server is from B information on linking. (Or hopefully from doing /map.)
+; [3]: This example is operating under the assumption that you don't fiddle with the numeric number above. (0)
+; [4]: AAAAA on top of AAAAA will result in a numeric collision (thus SQUIT). However, making "AAAAA Q :Quit." first is fine.
+; [5]: I honestly fail to see how a server inviting a user to a channel is a problem. (They can change modes, kick users, talk,
+;      all without being on the channel. So why can't they invite anybody?)
 ; [6]: Thanks to Dave (Codex` / Hero_Number_Zero) for once sharing the numeric/P10 conversion code with me nearly a decade ago.
 ;
 ; EOF
