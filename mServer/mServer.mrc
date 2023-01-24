@@ -15,6 +15,8 @@
 ; /mServer.sraw J #channel - Will cause the server to SQUIT because servers cannot join channels. :P
 ; /mServer.sraw I FBI #channel - Will also cause the server to SQUIT because servers cannot invite users apparently.[5]
 ;
+; Note: You need to use the nick, not the numeric in order to invite a user.
+;
 ; Further reading:
 ; --------------------
 ; 1. [P10]:  http://ircd.bircd.org/bewarep10.txt (recommended)
@@ -25,10 +27,10 @@
 ; "Settings":
 
 alias mServer.flags { return + }
-; `-> Append flags - which in this case is basically just +6 or +s (or both) - with +.
+; `-> Append flags - which in this case is basically just 6 or s (or both) - with +. If no flags are specified, just leave it as: +
 alias mServer.info { return A jupe server for ircu P10 protocol in mSL. }
 alias mServer.numeric { return 0 }
-; `-> Limited between 0 and 4095.
+; `-> The numeric of our server. Limited between 0 and 4095.
 alias -l mServer.password { return changeme }
 ; `-> Plaintext password.
 alias -l mServer.port { return 4400 }
@@ -36,6 +38,7 @@ alias -l mServer.port { return 4400 }
 alias -l mServer.server { return localhost }
 ; `-> The address we plan on connecting to. E.g. /server localhost 4400
 alias -l mServer.serverName { return changeme.localhost }
+; `-> The name of our server.
 
 ; Core:
 
@@ -52,9 +55,10 @@ on *:sockopen:mServer:{
   ; `-> PASS must _ALWAYS_ come first.
   mServer.raw SERVER $mServer.serverName 1 $ctime $ctime J10 $+(%this.numeric,]]]) $mServer.flags $+(:,$mServer.info)
   ; ¦-> SERVER <our server name> <hop count> <connection time> <link time> <protocol> <our server numeric><max users as numeric> [+flags] :<description>
+  ; ¦
   ; ¦-> We're joining the server, so we use J10 here, not P10. And ]]] means the maximum number of users allowed. (262,143)
   ; |-> Flags may or may not be being used here; +s would mean Services. E.g. ... J10 SV]]] +s :IRC Services
-  ; `-> NOTE: In the case of adding an new server post END_OF_BURST, you must specify flags! Even if it's just + or the server _will_ SQUIT.
+  ; `-> NOTE: In the case of adding a new server post END_OF_BURST, you must specify flags! Even if it's just + or the server _will_ SQUIT.
   mServer.raw %this.numeric EB
   ; `-> END_OF_BURST
 }
@@ -69,7 +73,7 @@ on *:sockread:mServer:{
     return
   }
   if ($istok(F INFO,$2,32) == $true) {
-    ; <numeric> F <server numeric>
+    ; <numeric> <F|INFO> <server numeric>
 
     mServer.sraw 371 $1 $+(:,$mServer.serverName)
     mServer.sraw 371 $1 $+(:,$mServer.info)
@@ -77,20 +81,20 @@ on *:sockread:mServer:{
     return
   }
   if ($istok(G PING,$2,32) == $true) {
-    ; <numeric> G [:]<arg>
+    ; <numeric> <G|PING> [:]<arg>
 
     mServer.sraw Z $3-
     ; `-> Saying PONG instead of Z should also work; but let's leave it alone.
     return
   }
   if ($istok(MO MOTD,$2,32) == $true) {
-    ; <numeric> MO <server numeric>
+    ; <numeric> MO[TD] <server numeric>
 
     mServer.sraw 422 $1 :MOTD File is missing
     return
   }
   if ($istok(TI TIME,$2,32) == $true) {
-    ; <numeric> TI <server numeric>
+    ; <numeric> TI[ME] <server numeric>
 
     mServer.sraw 391 $1 $mServer.serverName $ctime 0 $+(:,$asctime($ctime,dddd mmmm dd yyyy -- HH:nn:ss))
     ; `-> 0 is offset. I don't know what to put here, so I'm leaving it as zero.
@@ -169,8 +173,8 @@ alias inttobase64 {
 }
 ; [6]
 
-; Footnotes:
-; ----------
+; Footnote(s):
+; ---------------
 ; [1]: C:127.0.0.1:changeme:changeme.localhost::0 in an ircd.conf
 ; [2]: Example only. Factors like the numeric of the main server (AA, AB, etc.) will change this. (AAAAx, ABAAx, ACAAx, etc.)
 ;      You'll be able to tell what the numeric of the main server is from B information on linking. (Or hopefully from doing /map.)
