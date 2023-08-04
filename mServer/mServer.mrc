@@ -27,10 +27,11 @@
 ; "Settings":
 
 alias mServer.flags { return + }
-; `-> Append flags - which in this case is basically just 6 or s (or both) - with +. If no flags are specified, just leave it as: +
+; ¦-> Append flags - which in this case is basically just 6 or s (or both) - with a +. If no flags are specified, just leave it as: +
+; `-> +6 might be related to IPv6 (I'm not 100% sure), but +s would mean Services.
 alias mServer.info { return A jupe server for ircu P10 protocol in mSL. }
 alias mServer.numeric { return 0 }
-; `-> The numeric of our server. Limited between 0 and 4095.
+; `-> The numeric of our server. Limited from 0 to 4095.
 alias -l mServer.password { return changeme }
 ; `-> Plaintext password.
 alias -l mServer.port { return 4400 }
@@ -52,12 +53,15 @@ on *:sockopen:mServer:{
   }
   var %this.numeric = $inttobase64($mServer.numeric,2)
   mServer.raw PASS $+(:,$mServer.password))
-  ; `-> PASS must _ALWAYS_ come first.
+  ; `-> PASS must _ALWAYS_ come first. (And like clients, there is no limit on how many times you may send this command first.)
   mServer.raw SERVER $mServer.serverName 1 $ctime $ctime J10 $+(%this.numeric,]]]) $mServer.flags $+(:,$mServer.info)
-  ; ¦-> SERVER <our server name> <hop count> <connection time> <link time> <protocol> <our server numeric><max users as numeric> [+flags] :<description>
+  ; ¦-> SERVER <our server name> <hop count> <start time> <link time> <protocol> <our server numeric><max users as numeric> [+flags] :<description>
   ; ¦
-  ; ¦-> We're joining the server, so we use J10 here, not P10. And ]]] means the maximum number of users allowed. (262,143)
-  ; |-> Flags may or may not be being used here; +s would mean Services. E.g. ... J10 SV]]] +s :IRC Services
+  ; ¦-> We're joining the server, so we use J10 here, not P10. (Though I've honestly never seen bewareIRCd complain about using P10 instead of J10.)
+  ; ¦-> And ]]] means the maximum number of users allowed. (262,143 - Though please remember that AAA is treated as 0.)
+  ; ¦-> Flags may or may not be being used here; +s would mean Services. E.g. ... J10 SV]]] +s :IRC Services
+  ; ¦-> If we plan to send burst information, the order here would be servers first, (S), then clients (N), then channels (B), then G-lines (GL).
+  ; ¦
   ; `-> NOTE: In the case of adding a new server post END_OF_BURST, you must specify flags! Even if it's just + or the server _will_ SQUIT.
   mServer.raw %this.numeric EB
   ; `-> END_OF_BURST
