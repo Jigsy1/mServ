@@ -1,6 +1,6 @@
-; mServer - An example of linking to an ircu based IRCd in mIRC.
+; mServer - An example of linking to an ircu P10 protocol based IRCd in mIRC.
 ;
-; This script will not work unless you have a C:line[1] on an ircu based IRCd. (E.g. http://ircd.bircd.org/)
+; This script will not work unless you have a C:line[1] on an ircu P10 protocol based IRCd. (E.g. http://ircd.bircd.org/)
 ;
 ; Example commands:
 ; --------------------
@@ -60,9 +60,10 @@ on *:sockopen:mServer:{
   ; ¦-> We're joining the server, so we use J10 here, not P10. (Though I've honestly never seen bewareIRCd complain about using P10 instead of J10.)
   ; ¦-> And ]]] means the maximum number of users allowed. (262,143 - Though please remember that AAA is treated as 0.)
   ; ¦-> Flags may or may not be being used here; +s would mean Services. E.g. ... J10 SV]]] +s :IRC Services
-  ; ¦-> If we plan to send burst information, the order here would be servers first, (S), then clients (N), then channels (B), then G-lines (GL).
+  ; ¦-> If we plan to send burst information, the order here would be servers first (S), then G-lines (GL), then clients (N), then channels (B).
   ; ¦
-  ; `-> NOTE: In the case of adding a new server post END_OF_BURST, you must specify flags! Even if it's just + or the server _will_ SQUIT.
+  ; |-> NOTE: In the case of adding a new server post END_OF_BURST, you must specify flags! Even if it's just + or the server _will_ SQUIT.
+  ; `->       You must also specify the correct hop count. Which is always N+1. The same applies to users created on the new server.
   mServer.raw %this.numeric EB
   ; `-> END_OF_BURST
 }
